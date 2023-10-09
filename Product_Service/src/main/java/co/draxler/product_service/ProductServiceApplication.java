@@ -1,9 +1,11 @@
 package co.draxler.product_service;
 
+import com.netflix.discovery.EurekaNamespace;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
+
 public class ProductServiceApplication {
 
     public static void main(String[] args) {

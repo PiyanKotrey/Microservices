@@ -1,5 +1,6 @@
 package co.draxler.order_service.service;
 
+import co.draxler.order_service.dto.InventoryResponse;
 import co.draxler.order_service.dto.OrderLineItemsDto;
 import co.draxler.order_service.dto.OrderRequest;
 import co.draxler.order_service.model.Order;
@@ -7,7 +8,9 @@ import co.draxler.order_service.model.OrderLineItems;
 import co.draxler.order_service.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -15,6 +18,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class OrderServiceImp implements OrderService{
     private final OrderRepository orderRepository;
+    private final WebClient webClient;
     @Override
     public void placeOrder(OrderRequest orderRequest) {
         Order order = new Order();
@@ -27,7 +31,24 @@ public class OrderServiceImp implements OrderService{
 
         order.setOrderLineItemsList(orderLineItems);
 
-        orderRepository.save(order);
+        List<String> skuCodes = order.getOrderLineItemsList().stream()
+                .map(OrderLineItems::getSkuCode)
+                .toList();
+
+        InventoryResponse[] inventoryResponsesArray = webClient.get()
+                .uri("http://localhost:8083/api/v1/inventory",uriBuilder -> uriBuilder
+                        .queryParam("skuCode",skuCodes).build())
+                .retrieve()
+                .bodyToMono(InventoryResponse[].class)
+                .block();
+        boolean allProductsInStock = Arrays.stream(inventoryResponsesArray)
+                .allMatch(InventoryResponse::isInStock);
+
+        if (allProductsInStock){
+            orderRepository.save(order);
+        }else {
+            throw new IllegalArgumentException("product is not in stock!");
+        }
     }
     private OrderLineItems mapToDto(OrderLineItemsDto orderLineItemsDto) {
         OrderLineItems orderLineItems = new OrderLineItems();
@@ -36,4 +57,5 @@ public class OrderServiceImp implements OrderService{
         orderLineItems.setSkuCode(orderLineItemsDto.getSkuCode());
         return orderLineItems;
     }
+
 }

@@ -10,5 +10,9 @@
         <module name="inventory_service.main" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="api_gatewat.main" target="17" />
+      <module name="api_gatewat.test" target="17" />
+    </bytecodeTargetLevel>
   </component>
 </project>
