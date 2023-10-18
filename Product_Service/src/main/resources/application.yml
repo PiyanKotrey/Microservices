@@ -5,6 +5,12 @@ spring:
     mongodb:
       uri: mongodb://localhost:27017/product_service
       database: product_service
+
+##config-client
+#  config:
+#    import: optional:configserver:http://localhost:8085
+#  profiles:
+#    active: dev
 server:
   port: 8082
 
