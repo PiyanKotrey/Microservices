@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: product-service
+  data:
+    mongodb:
+      uri: mongodb://Product_Service_container:27017/product_service
+      database: product_service
+
+server:
+  port: 8081
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://discovery_server_container:8761/eureka

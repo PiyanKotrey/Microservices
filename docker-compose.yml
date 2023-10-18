@@ -1,0 +1,115 @@
+version: '3.8'
+
+services:
+  # PostgreSQL service for inventory
+  postgres_inventory:
+    image: postgres:latest
+    container_name: postgres_inventory_container
+    environment:
+      POSTGRES_DB: inventory_service
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: kotreyjr10
+    ports:
+      - "5432:5432"
+    networks:
+      - mynetwork
+
+  # PostgreSQL service for database 2
+  postgres_order:
+    image: postgres:latest
+    container_name: postgres_order_container
+    environment:
+      POSTGRES_DB: order_service
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: kotreyjr10
+    ports:
+      - "5433:5432"
+    networks:
+      - mynetwork
+
+
+
+
+  # MongoDB service
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb_container
+    ports:
+      - "27017:27017"
+    networks:
+      - mynetwork
+
+  inventory_service:
+    build: ./inventory_service
+    image: inventory:latest
+    container_name: inventory_service_container
+    depends_on:
+      - postgres_inventory
+    environment:
+       DB_SERVER: postgres_inventory_container
+       POSTGRES_DB: inventory_service
+       POSTGRES_USER: postgres
+       POSTGRES_PASSWORD: kotreyjr10
+
+    networks:
+      - mynetwork
+    ports:
+      - 8083:8083
+
+#  order_service:
+#    build: ./order_service/
+#    image: order:latest
+#    container_name: order_service_container
+#    depends_on:
+#      - postgres_order
+#    environment:
+#      DB_SERVER: postgres_order_container
+#      POSTGRES_DB: order_service
+#      POSTGRES_USER: postgres
+#      POSTGRES_PASSWORD: kotreyjr10
+#
+#    networks:
+#      - mynetwork
+#    ports:
+#      - 8082:8082
+
+  order-service:
+    build: ./order_service
+    container_name: order_service_container
+    image: order_service:latest
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    networks:
+      - mynetwork
+    ports:
+      - 8082:8082
+
+  ## Eureka Server
+  discovery-server:
+    build: ./discovery_service
+    image: discovery:latest
+    container_name: discovery_server_container
+    ports:
+      - "8761:8761"
+    networks:
+      - mynetwork
+
+  Product_Service:
+    build:
+      context: ./Product_Service
+      dockerfile: Dockerfile
+    image: custom-mongodb-app:latest
+    container_name: Product_Service_container
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      - mongodb
+    networks:
+      - mynetwork
+    ports:
+      - 8080:8080
+
+networks:
+  mynetwork:
+
+

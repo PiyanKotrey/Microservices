@@ -8,6 +8,7 @@ import co.draxler.order_service.model.OrderLineItems;
 import co.draxler.order_service.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.Arrays;
@@ -19,8 +20,9 @@ import java.util.UUID;
 public class OrderServiceImp implements OrderService{
     private final OrderRepository orderRepository;
     private final WebClient webClient;
+
     @Override
-    public void placeOrder(OrderRequest orderRequest) {
+    public String placeOrder(OrderRequest orderRequest) {
         Order order = new Order();
         order.setOrderNumber(UUID.randomUUID().toString());
 
@@ -46,6 +48,7 @@ public class OrderServiceImp implements OrderService{
 
         if (allProductsInStock){
             orderRepository.save(order);
+            return "order placed";
         }else {
             throw new IllegalArgumentException("product is not in stock!");
         }
